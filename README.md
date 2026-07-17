@@ -6,36 +6,6 @@ official public disclosure filings (not paid aggregators).
 **Educational/informational only. Not investment advice. Disclosed amounts
 are ranges, not exact figures.**
 
-## Status: Phase 1-3 built (ingestion, scoring, dashboard)
-
-What's here:
-
-- `app/scrapers/roster.py` — member roster + bio data via api.congress.gov,
-  committee assignments via clerk.house.gov / senate.gov directly (the
-  congress.gov API has no committee-roster endpoint).
-- `app/scrapers/house_ptr.py` — House Periodic Transaction Report scraper.
-  Validated against real filings.
-- `app/scrapers/senate_efd.py` — Senate eFD PTR scraper. Validated against
-  real filings. **Requires a visible (non-headless) browser window** —
-  efdsearch.senate.gov's bot protection blocks every headless client,
-  including headless Chromium. A Chrome window will pop up while this runs;
-  it needs an active desktop session (won't work on a headless server/CI
-  box without a virtual display).
-- `app/normalization/ticker_match.py` — asset name → ticker matching against
-  NASDAQ Trader's free symbol directory, with a confidence threshold.
-- `app/selection/top30.py` — member selection. Default is `all` (every
-  active member, both chambers). `manual` (a curated list in
-  `config/tracked_members.py`) is still available if you want to scope back
-  down; `volume`/`frequency`/`performance` need a full scrape cycle first.
-- `app/scoring/` — Phase 2 (CLAUDE.md §7): price backfill via yfinance, then
-  performance/conviction/overlap/recency/composite scores, plus the
-  committee-relevance and bipartisan-overlap flags. Validated by hand
-  against real Pelosi/Gottheimer/Capito trades.
-- `app/api/` — FastAPI backend serving `/trades` (sortable/filterable),
-  `/members/{id}`, `/tickers/{ticker}`.
-- `frontend/` — Next.js + Tailwind + Recharts dashboard (trade table, member
-  profile pages with sector breakdown chart, ticker pages).
-
 ## Setup
 
 ```
