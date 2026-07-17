@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m venv .venv_check)",
+      "Bash(\".venv_check/Scripts/python\" -m pip install --quiet -r requirements.txt)",
+      "Bash(.venv_check/Scripts/python -c ' *)",
+      "PowerShell(Get-Command docker -ErrorAction SilentlyContinue)",
+      "PowerShell(docker --version 2>&1)",
+      "PowerShell(winget --version 2>&1)",
+      "PowerShell(winget search PostgreSQL)",
+      "PowerShell(winget install --id PostgreSQL.PostgreSQL.16 --source winget --accept-package-agreements --accept-source-agreements --silent)",
+      "Read(//c/Program Files/PostgreSQL/**)",
+      "PowerShell(Get-Process python -ErrorAction SilentlyContinue)",
+      "Bash(cd \"c:/Users/HelloWorld/congrestional_trading\" && rm -rf data/cache/congress_api && echo \"cleared congress_api cache\")",
+      "Bash(python3 -c ' *)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "Bash(mkdir -p \"c:/Users/HelloWorld/congrestional_trading/frontend/src/lib\" \"c:/Users/HelloWorld/congrestional_trading/frontend/src/components\" \"c:/Users/HelloWorld/congrestional_trading/frontend/src/app/members/[id]\" \"c:/Users/HelloWorld/congrestional_trading/frontend/src/app/tickers/[ticker]\")",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "PowerShell(gh auth status 2>&1)",
+      "PowerShell(gh repo view winstongarth/congress-tracker-dashboard 2>&1)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\HelloWorld\\congrestional_trading\\data\\cache\\congress_api",
+      "c:\\Users\\HelloWorld\\congrestional_trading\\frontend\\src\\app\\members"
+    ]
+  }
+}

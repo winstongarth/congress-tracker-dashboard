@@ -1,0 +1,10 @@
+.venv/
+.venv_check/
+__pycache__/
+*.pyc
+.env
+data/cache/
+data/weight_changes.log
+*.db
+*.egg-info/
+.claude/settings.local.json
