@@ -1,21 +1,85 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { Stack } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTradesQuery } from "@/generated/graphql";
+import { FeedEmptyState } from "@/components/FeedEmptyState";
+import { FeedErrorState } from "@/components/FeedErrorState";
+import { TradeRow } from "@/components/TradeRow";
+import { TradeRowSkeleton } from "@/components/TradeRowSkeleton";
+import { useTradesFeedQuery } from "@/generated/graphql";
 
-// Phase 2 checkpoint: prove the Expo -> Apollo -> GraphQL -> FastAPI pipeline
-// works end to end. Just dumps raw JSON -- the real feed UI is Phase 3.
-export default function Index() {
-  const { data, loading, error } = useTradesQuery({ variables: { limit: 5 } });
+const PAGE_SIZE = 20;
+const INITIAL_SKELETON_ROWS = 8;
+
+export default function TradesFeedScreen() {
+  const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const { data, loading, error, refetch, fetchMore } = useTradesFeedQuery({
+    variables: { limit: PAGE_SIZE, offset: 0 },
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const trades = data?.trades.results ?? [];
+  const totalCount = data?.trades.totalCount ?? 0;
+  const hasMore = trades.length < totalCount;
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch({ limit: PAGE_SIZE, offset: 0 });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
+
+  const handleEndReached = useCallback(async () => {
+    if (loadingMore || loading || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      await fetchMore({
+        variables: { limit: PAGE_SIZE, offset: trades.length },
+        updateQuery: (previous, { fetchMoreResult }) => {
+          if (!fetchMoreResult) return previous;
+          return {
+            trades: {
+              ...fetchMoreResult.trades,
+              results: [...previous.trades.results, ...fetchMoreResult.trades.results],
+            },
+          };
+        },
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [fetchMore, hasMore, loading, loadingMore, trades.length]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>trades(limit: 5)</Text>
-      {loading && <Text>Loading...</Text>}
-      {error && <Text style={styles.error}>{error.message}</Text>}
-      {data && (
-        <ScrollView style={styles.scroll}>
-          <Text style={styles.json}>{JSON.stringify(data, null, 2)}</Text>
-        </ScrollView>
+      <Stack.Screen options={{ title: "Trades" }} />
+
+      {error && !data ? (
+        <FeedErrorState message={error.message} onRetry={() => refetch()} />
+      ) : loading && !data ? (
+        <View>
+          {Array.from({ length: INITIAL_SKELETON_ROWS }).map((_, index) => (
+            <TradeRowSkeleton key={index} />
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={trades}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <TradeRow trade={item} />}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom }]}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          onEndReachedThreshold={0.4}
+          onEndReached={handleEndReached}
+          ListEmptyComponent={<FeedEmptyState />}
+          ListFooterComponent={loadingMore ? <TradeRowSkeleton /> : null}
+        />
       )}
     </View>
   );
@@ -24,22 +88,9 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 16,
+    backgroundColor: "#FFFFFF",
   },
-  heading: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  error: {
-    color: "crimson",
-  },
-  scroll: {
-    flex: 1,
-  },
-  json: {
-    fontFamily: "monospace",
-    fontSize: 12,
+  listContent: {
+    flexGrow: 1,
   },
 });

@@ -16,6 +16,11 @@ const config: CodegenConfig = {
       plugins: ["typescript", "typescript-operations", "typescript-react-apollo"],
       config: {
         withHooks: true,
+        // The backend's Date scalar serializes as an ISO date string
+        // (app/graphql/types.py); without this it falls back to `unknown`.
+        scalars: {
+          Date: "string",
+        },
       },
     },
   },

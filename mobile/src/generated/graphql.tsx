@@ -15,7 +15,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  Date: { input: any; output: any; }
+  Date: { input: string; output: string; }
 };
 
 export enum AssetType {
@@ -176,17 +176,17 @@ export enum TransactionType {
   Sell = 'SELL'
 }
 
-export type TradesQueryVariables = Exact<{
+export type TradesFeedQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type TradesQuery = { __typename?: 'Query', trades: { __typename?: 'TradeConnection', totalCount: number, results: Array<{ __typename?: 'Trade', id: string, ticker?: string | null, assetNameRaw: string, transactionType: TransactionType, transactionDate: any, disclosureDate: any, amountMin: number, amountMax: number, amountMid: number, sector?: string | null, performance?: number | null, politician: { __typename?: 'Politician', id: string, fullName: string, chamber: Chamber, party: Party } }> } };
+export type TradesFeedQuery = { __typename?: 'Query', trades: { __typename?: 'TradeConnection', totalCount: number, results: Array<{ __typename?: 'Trade', id: string, ticker?: string | null, assetNameRaw: string, transactionType: TransactionType, disclosureDate: string, amountMin: number, amountMax: number, politician: { __typename?: 'Politician', id: string, fullName: string } }> } };
 
 
-export const TradesDocument = gql`
-    query Trades($limit: Int, $offset: Int) {
+export const TradesFeedDocument = gql`
+    query TradesFeed($limit: Int, $offset: Int) {
   trades(limit: $limit, offset: $offset) {
     totalCount
     results {
@@ -194,18 +194,12 @@ export const TradesDocument = gql`
       ticker
       assetNameRaw
       transactionType
-      transactionDate
       disclosureDate
       amountMin
       amountMax
-      amountMid
-      sector
-      performance
       politician {
         id
         fullName
-        chamber
-        party
       }
     }
   }
@@ -213,38 +207,38 @@ export const TradesDocument = gql`
     `;
 
 /**
- * __useTradesQuery__
+ * __useTradesFeedQuery__
  *
- * To run a query within a React component, call `useTradesQuery` and pass it any options that fit your needs.
- * When your component renders, `useTradesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useTradesFeedQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTradesFeedQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useTradesQuery({
+ * const { data, loading, error } = useTradesFeedQuery({
  *   variables: {
  *      limit: // value for 'limit'
  *      offset: // value for 'offset'
  *   },
  * });
  */
-export function useTradesQuery(baseOptions?: Apollo.QueryHookOptions<TradesQuery, TradesQueryVariables>) {
+export function useTradesFeedQuery(baseOptions?: Apollo.QueryHookOptions<TradesFeedQuery, TradesFeedQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<TradesQuery, TradesQueryVariables>(TradesDocument, options);
+        return Apollo.useQuery<TradesFeedQuery, TradesFeedQueryVariables>(TradesFeedDocument, options);
       }
-export function useTradesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TradesQuery, TradesQueryVariables>) {
+export function useTradesFeedLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TradesFeedQuery, TradesFeedQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<TradesQuery, TradesQueryVariables>(TradesDocument, options);
+          return Apollo.useLazyQuery<TradesFeedQuery, TradesFeedQueryVariables>(TradesFeedDocument, options);
         }
 // @ts-ignore
-export function useTradesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<TradesQuery, TradesQueryVariables>): Apollo.UseSuspenseQueryResult<TradesQuery, TradesQueryVariables>;
-export function useTradesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TradesQuery, TradesQueryVariables>): Apollo.UseSuspenseQueryResult<TradesQuery | undefined, TradesQueryVariables>;
-export function useTradesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TradesQuery, TradesQueryVariables>) {
+export function useTradesFeedSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<TradesFeedQuery, TradesFeedQueryVariables>): Apollo.UseSuspenseQueryResult<TradesFeedQuery, TradesFeedQueryVariables>;
+export function useTradesFeedSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TradesFeedQuery, TradesFeedQueryVariables>): Apollo.UseSuspenseQueryResult<TradesFeedQuery | undefined, TradesFeedQueryVariables>;
+export function useTradesFeedSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TradesFeedQuery, TradesFeedQueryVariables>) {
           const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<TradesQuery, TradesQueryVariables>(TradesDocument, options);
+          return Apollo.useSuspenseQuery<TradesFeedQuery, TradesFeedQueryVariables>(TradesFeedDocument, options);
         }
-export type TradesQueryHookResult = ReturnType<typeof useTradesQuery>;
-export type TradesLazyQueryHookResult = ReturnType<typeof useTradesLazyQuery>;
-export type TradesSuspenseQueryHookResult = ReturnType<typeof useTradesSuspenseQuery>;
-export type TradesQueryResult = Apollo.QueryResult<TradesQuery, TradesQueryVariables>;
+export type TradesFeedQueryHookResult = ReturnType<typeof useTradesFeedQuery>;
+export type TradesFeedLazyQueryHookResult = ReturnType<typeof useTradesFeedLazyQuery>;
+export type TradesFeedSuspenseQueryHookResult = ReturnType<typeof useTradesFeedSuspenseQuery>;
+export type TradesFeedQueryResult = Apollo.QueryResult<TradesFeedQuery, TradesFeedQueryVariables>;
