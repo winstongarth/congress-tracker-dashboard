@@ -1,0 +1,24 @@
+query Trades($limit: Int, $offset: Int) {
+  trades(limit: $limit, offset: $offset) {
+    totalCount
+    results {
+      id
+      ticker
+      assetNameRaw
+      transactionType
+      transactionDate
+      disclosureDate
+      amountMin
+      amountMax
+      amountMid
+      sector
+      performance
+      politician {
+        id
+        fullName
+        chamber
+        party
+      }
+    }
+  }
+}
