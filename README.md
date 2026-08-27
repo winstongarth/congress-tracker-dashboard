@@ -32,7 +32,8 @@ What's here:
   committee-relevance and bipartisan-overlap flags. Validated by hand
   against real Pelosi/Gottheimer/Capito trades.
 - `app/api/` — FastAPI backend serving `/trades` (sortable/filterable),
-  `/members/{id}`, `/tickers/{ticker}`.
+  `/members/{id}`, `/tickers/{ticker}`, plus a GraphQL aggregation layer at
+  `/graphql` (Strawberry) for the mobile client — see "GraphQL API" below.
 - `frontend/` — Next.js + Tailwind + Recharts dashboard (trade table, member
   profile pages with sector breakdown chart, ticker pages).
 
@@ -76,6 +77,16 @@ overridable via `.env`. Changing the composite weights is logged with a
 timestamp to `data/weight_changes.log` so old vs. new rankings stay
 comparable (CLAUDE.md §7.6).
 
+## Running tests
+
+```
+pip install -r requirements.txt   # brings in pytest
+python -m pytest
+```
+
+Tests run against an in-memory SQLite database (see `tests/conftest.py`),
+not the real Postgres instance in `.env`.
+
 ## Running the dashboard
 
 ```
@@ -91,6 +102,42 @@ npm run dev
 Then open http://localhost:3000. Run `python -m app.cli score` again after
 any new scrape to refresh the numbers — scores are computed in batch, not
 live in the UI (CLAUDE.md §4).
+
+## GraphQL API
+
+Alongside the REST endpoints above, the same FastAPI app serves a GraphQL
+aggregation layer at `/graphql` (built with
+[Strawberry](https://strawberry.rocks/)), aimed at the `mobile/` React
+Native client. It reuses the exact same score/metric lookups as the REST
+routes (`app/services/`) rather than recomputing anything, and batches its
+`politician -> trades` and `trade -> ticker` lookups with DataLoader to
+avoid N+1 queries. See `app/graphql/` for the schema, resolvers, and loaders.
+
+REST stays the source of truth for the Next.js dashboard — GraphQL is
+additive, not a replacement.
+
+### Mobile dev: reaching `/graphql` from a physical phone
+
+Expo Go on a physical device can't reach `localhost:8000` — `localhost`
+resolves to the phone itself, not your computer. To test against a real
+device on the same Wi-Fi network:
+
+1. Bind uvicorn to all interfaces, not just localhost:
+
+   ```
+   python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
+   ```
+
+2. Set `DEBUG=true` in `.env` for this session — it enables GraphiQL at
+   `/graphql` and relaxes CORS to allow any `http://<lan-ip>:<port>` origin
+   (the Expo dev client's Metro bundler runs on a random port). **Never**
+   run with `DEBUG=true` in production.
+3. Find your computer's LAN IP (`ipconfig` on Windows, look for the
+   `192.168.x.x`/`10.x.x.x` address on your Wi-Fi adapter) and point the
+   Expo app at it — e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.50:8000` in
+   `mobile/.env` (see `mobile/README.md` once Phase 2 lands). Your phone and
+   computer must be on the same network, and any firewall prompt for
+   `python.exe`/`uvicorn` needs to be allowed on "Private" networks.
 
 ## Dashboard columns
 

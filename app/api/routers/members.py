@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from collections import defaultdict
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.api.schemas import MemberDetail, MemberListEntry
-from app.db.models import Member, PortfolioReturn, Score, TickerMetadata, Trade
+from app.db.models import Member, PortfolioReturn, Trade
+from app.services.member_metrics import fetch_performance_rollup, fetch_sector_breakdown
 
 router = APIRouter(prefix="/members", tags=["members"])
 
@@ -86,25 +85,10 @@ def get_member(member_id: str, db: Session = Depends(get_db)) -> MemberDetail:
     if member is None:
         raise HTTPException(status_code=404, detail="Member not found")
 
-    trades = list(db.scalars(select(Trade).where(Trade.member_id == member_id)))
-
-    rollup = db.scalar(
-        select(Score.value).where(
-            Score.member_id == member_id, Score.score_type == "performance", Score.trade_id.is_(None)
-        )
-    )
+    trade_count = db.scalar(select(func.count()).select_from(Trade).where(Trade.member_id == member_id))
+    rollup = fetch_performance_rollup(db, member_id)
     portfolio_return = db.get(PortfolioReturn, member_id)
-
-    tickers = {t.ticker for t in trades if t.ticker}
-    metadata_by_ticker = {
-        tm.ticker: tm for tm in db.scalars(select(TickerMetadata).where(TickerMetadata.ticker.in_(tickers)))
-    } if tickers else {}
-
-    sector_totals: dict[str, float] = defaultdict(float)
-    for t in trades:
-        meta = metadata_by_ticker.get(t.ticker)
-        sector = meta.sector if meta and meta.sector else "Unknown"
-        sector_totals[sector] += float(t.amount_mid)
+    sector_breakdown = fetch_sector_breakdown(db, member_id)
 
     return MemberDetail(
         member_id=member.member_id,
@@ -116,7 +100,7 @@ def get_member(member_id: str, db: Session = Depends(get_db)) -> MemberDetail:
         photo_url=member.photo_url,
         committees=member.committees or [],
         performance_rollup=rollup,
-        trade_count=len(trades),
-        sector_breakdown=dict(sector_totals),
+        trade_count=trade_count or 0,
+        sector_breakdown=sector_breakdown,
         **_portfolio_fields(portfolio_return),
     )

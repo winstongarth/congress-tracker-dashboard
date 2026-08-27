@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.api.schemas import MemberSummary, TradeOut, TradePage
-from app.db.models import Member, Score, TickerMetadata, Trade
+from app.db.models import Member, TickerMetadata, Trade
+from app.services.ticker_metadata import fetch_ticker_metadata
+from app.services.trade_scores import fetch_scores_by_trade
 
 router = APIRouter(prefix="/trades", tags=["trades"])
 
@@ -100,14 +102,7 @@ def list_trades(
 
     all_trades = list(db.scalars(stmt))
 
-    score_rows = db.execute(
-        select(Score.trade_id, Score.score_type, Score.value).where(
-            Score.trade_id.in_([t.trade_id for t in all_trades])
-        )
-    ).all()
-    scores_by_trade: dict[int, dict[str, float]] = {}
-    for trade_id, score_type, value in score_rows:
-        scores_by_trade.setdefault(trade_id, {})[score_type] = value
+    scores_by_trade = fetch_scores_by_trade(db, [t.trade_id for t in all_trades])
 
     if sort_by in ("composite", "performance", "overlap", "conviction"):
         all_trades.sort(
@@ -118,9 +113,7 @@ def list_trades(
     page_trades = all_trades[(page - 1) * page_size : page * page_size]
 
     tickers = {t.ticker for t in page_trades if t.ticker}
-    metadata_by_ticker = {
-        tm.ticker: tm for tm in db.scalars(select(TickerMetadata).where(TickerMetadata.ticker.in_(tickers)))
-    } if tickers else {}
+    metadata_by_ticker = fetch_ticker_metadata(db, tickers)
 
     results = []
     for t in page_trades:

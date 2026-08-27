@@ -14,3 +14,5 @@ python-dateutil>=2.9
 yfinance>=0.2
 fastapi>=0.111
 uvicorn[standard]>=0.30
+strawberry-graphql[fastapi]>=0.324
+pytest>=8.0
