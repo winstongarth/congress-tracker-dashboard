@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,11 +22,17 @@ export default function PoliticianDetailScreen() {
     variables: { id, tradesLimit: TRADES_LIMIT, tradesOffset: 0 },
   });
 
+  const handleRetry = useCallback(() => {
+    // Surfaced via `error` above; swallow so this fire-and-forget retry
+    // doesn't produce an unhandled promise rejection.
+    refetch().catch(() => {});
+  }, [refetch]);
+
   if (error && !data) {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: "Politician" }} />
-        <ErrorState title="Could not load politician" message={error.message} onRetry={() => refetch()} />
+        <ErrorState title="Could not load politician" message={error.message} onRetry={handleRetry} />
       </View>
     );
   }

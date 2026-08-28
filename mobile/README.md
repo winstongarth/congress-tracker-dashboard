@@ -1,14 +1,20 @@
-# Congress Portfolio Tracker — mobile
+# Congress Trades (mobile)
 
 Expo (managed workflow) + TypeScript + Expo Router client for the GraphQL
 API in `../app/graphql` (see the root [README](../README.md#graphql-api)).
 This is a thin client — REST and the Next.js dashboard (`../frontend`) are
-untouched and unaffected by anything here.
+untouched and unaffected by anything here. Display name in `app.json` is
+"Congress Trades"; the package/slug stayed `mobile`.
 
-Currently just a Phase 2 checkpoint screen: it fetches `trades(limit: 5)`
-over GraphQL and dumps the raw response as JSON, to prove the Expo → Apollo
-Client → `/graphql` → FastAPI pipeline works end to end before building any
-real UI (that's Phase 3+).
+Two screens:
+
+- **Trades feed** (`src/app/index.tsx`) — recent disclosures, pull-to-refresh,
+  infinite scroll, and debounced search + ticker + chamber filters, all as
+  GraphQL query variables (never filtered client-side).
+- **Politician detail** (`src/app/politician/[id].tsx`) — profile,
+  performance rollup, portfolio P&L, sector holdings, a per-trade
+  performance chart (`react-native-svg`), and their full trade list, fetched
+  in a single nested GraphQL query.
 
 ## Install
 
@@ -50,10 +56,11 @@ simulators/emulators/browser.
 
 ## GraphQL Code Generator
 
-`src/generated/graphql.tsx` (typed hooks like `useTradesQuery`) is generated
-from the live backend schema plus the `.graphql` operation files under
-`src/graphql/`. It's committed, but regenerate it whenever you add/change a
-query or the backend schema changes:
+`src/generated/graphql.tsx` (typed hooks like `useTradesFeedQuery` and
+`usePoliticianDetailQuery`) is generated from the live backend schema plus
+the `.graphql` operation files under `src/graphql/`. It's committed, but
+regenerate it whenever you add/change a query or the backend schema
+changes:
 
 ```
 npm run codegen
@@ -68,6 +75,16 @@ plugins to their `4.x` line. The `5.x`/`6.x` plugin releases (as of writing)
 emit duplicate top-level enum declarations when chained into a single output
 file this way — a real bug, not a config issue — so don't bump those without
 re-checking `npx tsc --noEmit` first.
+
+## Network resilience
+
+Every query goes through a `fetch` wrapped with a 15s timeout
+(`src/lib/apolloClient.ts`), so a reachable-but-unresponsive backend (dropped
+connection, captive portal, ...) still resolves to an error state instead of
+spinning forever. Loading/error/empty states, pull-to-refresh, and infinite
+scroll were all verified against a live backend with requests deliberately
+delayed or aborted (headless-browser + network interception) — no stuck
+spinners, no unhandled promise rejections.
 
 ## Other scripts
 

@@ -36,6 +36,9 @@ What's here:
   `/graphql` (Strawberry) for the mobile client — see "GraphQL API" below.
 - `frontend/` — Next.js + Tailwind + Recharts dashboard (trade table, member
   profile pages with sector breakdown chart, ticker pages).
+- `mobile/` — Expo (TypeScript, Expo Router) client consuming the GraphQL
+  API: a searchable/filterable trades feed and a politician detail screen
+  with a performance chart — see "Mobile" below.
 
 ## Setup
 
@@ -135,9 +138,47 @@ device on the same Wi-Fi network:
 3. Find your computer's LAN IP (`ipconfig` on Windows, look for the
    `192.168.x.x`/`10.x.x.x` address on your Wi-Fi adapter) and point the
    Expo app at it — e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.50:8000` in
-   `mobile/.env` (see `mobile/README.md` once Phase 2 lands). Your phone and
-   computer must be on the same network, and any firewall prompt for
-   `python.exe`/`uvicorn` needs to be allowed on "Private" networks.
+   `mobile/.env` (see `mobile/README.md`). Your phone and computer must be
+   on the same network, and any firewall prompt for `python.exe`/`uvicorn`
+   needs to be allowed on "Private" networks.
+
+## Mobile
+
+An Expo (TypeScript, Expo Router) client in `mobile/`, consuming the
+GraphQL API above — not a port of the Next.js dashboard, just the two
+screens that make sense as a phone app:
+
+- **Trades feed** — recent disclosures with pull-to-refresh, infinite
+  scroll, and server-side search/ticker/chamber filtering (never filtered
+  client-side — the GraphQL query variables do the work).
+- **Politician detail** — profile, performance rollup, portfolio P&L,
+  holdings by sector, a per-trade performance chart, and their full trade
+  list, all fetched in one nested GraphQL query.
+
+### Setup
+
+```
+cd mobile
+npm install
+cp .env.example .env   # see mobile/README.md for the LAN-IP note above
+npm start
+```
+
+Then scan the QR code with Expo Go (see `mobile/README.md` for the full
+walkthrough, including running on a physical device).
+
+### Screenshots
+
+<!-- TODO: add screenshots -->
+| Trades feed | Search & filter | Politician detail |
+| --- | --- | --- |
+| _screenshot placeholder_ | _screenshot placeholder_ | _screenshot placeholder_ |
+
+### Screen recording
+
+<!-- TODO: add a screen recording (e.g. a GIF or an mp4 link) showing the
+     feed, pull-to-refresh, infinite scroll, filtering, and navigating into
+     a politician's detail screen -->
 
 ## Dashboard columns
 

@@ -66,6 +66,10 @@ export default function TradesFeedScreen() {
     setRefreshing(true);
     try {
       await refetch({ offset: 0 });
+    } catch {
+      // Surfaced via `error` above (Apollo sets it on a failed refetch too);
+      // caught here only so a failed pull-to-refresh doesn't become an
+      // unhandled promise rejection.
     } finally {
       setRefreshing(false);
     }
@@ -87,10 +91,20 @@ export default function TradesFeedScreen() {
           };
         },
       });
+    } catch {
+      // A failed fetchMore just leaves the list where it was -- the user
+      // can scroll to retry. Caught only to avoid an unhandled rejection.
     } finally {
       setLoadingMore(false);
     }
   }, [fetchMore, hasMore, loading, loadingMore, trades.length]);
+
+  const handleRetry = useCallback(() => {
+    refetch().catch(() => {
+      // Surfaced via `error` above; swallow so this fire-and-forget retry
+      // doesn't produce an unhandled promise rejection.
+    });
+  }, [refetch]);
 
   return (
     <View style={styles.container}>
@@ -106,7 +120,7 @@ export default function TradesFeedScreen() {
       <ActiveFilterChips filters={activeFilters} />
 
       {error && !data ? (
-        <ErrorState title="Could not load trades" message={error.message} onRetry={() => refetch()} />
+        <ErrorState title="Could not load trades" message={error.message} onRetry={handleRetry} />
       ) : loading && !data ? (
         <View>
           {Array.from({ length: INITIAL_SKELETON_ROWS }).map((_, index) => (
