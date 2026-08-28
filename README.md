@@ -32,13 +32,9 @@ What's here:
   committee-relevance and bipartisan-overlap flags. Validated by hand
   against real Pelosi/Gottheimer/Capito trades.
 - `app/api/` — FastAPI backend serving `/trades` (sortable/filterable),
-  `/members/{id}`, `/tickers/{ticker}`, plus a GraphQL aggregation layer at
-  `/graphql` (Strawberry) for the mobile client — see "GraphQL API" below.
+  `/members/{id}`, `/tickers/{ticker}`.
 - `frontend/` — Next.js + Tailwind + Recharts dashboard (trade table, member
   profile pages with sector breakdown chart, ticker pages).
-- `mobile/` — Expo (TypeScript, Expo Router) client consuming the GraphQL
-  API: a searchable/filterable trades feed and a politician detail screen
-  with a performance chart — see "Mobile" below.
 
 ## Setup
 
@@ -218,37 +214,7 @@ app. A sell with no earlier matching buy in the data (a pre-existing
 holding, most likely) doesn't count toward either number — see "Known
 limitations" below.
 
-## Known limitations (read before relying on this)
 
-- **Senate scraper needs a visible browser window and an active desktop
-  session** (see above) — this is a hard constraint from the site's bot
-  protection, confirmed by testing headless Chromium (both legacy and the
-  newer `--headless=new` mode), which both get blocked. There's no known
-  way around this short of running on a machine with a real desktop.
-- **House PTR parser targets the current "eFiled" PDF template** (used
-  since ~2023). Older or scanned/image-based filings will likely fail to
-  parse — they need OCR, which isn't implemented yet (CLAUDE.md Sec 9).
-- **Amendments**: re-running the trade scraper replaces all rows for a given
-  `filing_id`, so a corrected re-filing under the *same* ID is handled. A
-  brand-new amendment filing (different DocID) is not automatically linked
-  to the filing it supersedes — both will exist side by side.
-- **Conviction and overlap are only defined for buy trades** (per CLAUDE.md
-  §7.2/§7.4's wording). Sell trades' composite score defaults those two
-  components to a neutral percentile (50) rather than 0, so a sell isn't
-  unfairly penalized for a concept that doesn't apply to it — see
-  `app/scoring/composite.py` for the reasoning.
-- The dashboard's sector filter dropdown is a hardcoded list of common
-  yfinance/GICS-ish sector names (`frontend/src/components/FilterBar.tsx`),
-  not pulled dynamically from the DB.
-- **Realized P&L only counts a sell if a *disclosed* buy of the same
-  ticker/owner happened earlier** (`app/scoring/portfolio.py`'s FIFO
-  matching). A sell with no earlier matching buy in the data — most often a
-  pre-existing holding from before the member's disclosure window — is
-  silently excluded from both realized and unrealized P&L rather than
-  guessed at. This is correct, not a bug: e.g. a member who sold several
-  long-held stocks in December and then bought unrelated new ones in
-  January will show $0 realized P&L, since those sells aren't actually
-  closing the January buys.
 
 ## License
 
