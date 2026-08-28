@@ -50,7 +50,9 @@ class Query:
     def trades(
         self,
         info: strawberry.Info,
+        search: str | None = None,
         ticker: str | None = None,
+        chamber: Chamber | None = None,
         politician_id: strawberry.ID | None = None,
         from_: Annotated[dt.date | None, strawberry.argument(name="from")] = None,
         to: dt.date | None = None,
@@ -58,9 +60,20 @@ class Query:
         offset: int = 0,
     ) -> TradeConnection:
         db = info.context["db"]
-        stmt = select(TradeModel)
+        # Same join REST's /trades route always takes (app/api/routers/trades.py)
+        # -- needed here too since `chamber` and `search` filter on Member,
+        # not just Trade, and Trade.member being lazy="joined" only helps
+        # reads, not WHERE clauses.
+        stmt = select(TradeModel).join(Member, TradeModel.member_id == Member.member_id)
+        if search:
+            like = f"%{search}%"
+            stmt = stmt.where(
+                (Member.full_name.ilike(like)) | (TradeModel.ticker.ilike(like)) | (TradeModel.asset_name_raw.ilike(like))
+            )
         if ticker:
             stmt = stmt.where(TradeModel.ticker == ticker.upper())
+        if chamber is not None:
+            stmt = stmt.where(Member.chamber == chamber.value)
         if politician_id is not None:
             stmt = stmt.where(TradeModel.member_id == str(politician_id))
         if from_ is not None:

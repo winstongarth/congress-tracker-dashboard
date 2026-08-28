@@ -5,8 +5,8 @@ import datetime as dt
 from tests.conftest import gql
 
 TRADES_QUERY = """
-query($ticker: String, $politicianId: ID, $from: Date, $to: Date, $limit: Int, $offset: Int) {
-  trades(ticker: $ticker, politicianId: $politicianId, from: $from, to: $to, limit: $limit, offset: $offset) {
+query($search: String, $ticker: String, $chamber: Chamber, $politicianId: ID, $from: Date, $to: Date, $limit: Int, $offset: Int) {
+  trades(search: $search, ticker: $ticker, chamber: $chamber, politicianId: $politicianId, from: $from, to: $to, limit: $limit, offset: $offset) {
     totalCount
     results {
       id
@@ -29,8 +29,8 @@ query($ticker: String, $politicianId: ID, $from: Date, $to: Date, $limit: Int, $
 
 
 def _seed(make_member, make_trade, make_ticker_metadata, make_score):
-    make_member(member_id="M1", full_name="Jane Doe")
-    make_member(member_id="M2", full_name="John Smith")
+    make_member(member_id="M1", full_name="Jane Doe", chamber="house")
+    make_member(member_id="M2", full_name="John Smith", chamber="senate")
     make_ticker_metadata("AAPL", sector="Technology", industry="Consumer Electronics")
     t1 = make_trade("M1", ticker="AAPL", transaction_date=dt.date(2026, 1, 5))
     t2 = make_trade("M2", ticker="MSFT", transaction_date=dt.date(2026, 2, 10))
@@ -70,6 +70,31 @@ def test_trades_filter_by_date_range(client, make_member, make_trade, make_ticke
     data = gql(client, TRADES_QUERY, {"from": "2026-02-01", "to": "2026-02-28"})
     assert data["trades"]["totalCount"] == 1
     assert data["trades"]["results"][0]["ticker"] == "MSFT"
+
+
+def test_trades_search_matches_politician_name_ticker_or_asset_name(
+    client, make_member, make_trade, make_ticker_metadata, make_score
+):
+    _seed(make_member, make_trade, make_ticker_metadata, make_score)
+
+    by_name = gql(client, TRADES_QUERY, {"search": "jane"})
+    assert [t["ticker"] for t in by_name["trades"]["results"]] == ["AAPL"]
+
+    by_ticker = gql(client, TRADES_QUERY, {"search": "msft"})
+    assert [t["ticker"] for t in by_ticker["trades"]["results"]] == ["MSFT"]
+
+    by_nothing = gql(client, TRADES_QUERY, {"search": "no-such-match"})
+    assert by_nothing["trades"]["totalCount"] == 0
+
+
+def test_trades_filter_by_chamber(client, make_member, make_trade, make_ticker_metadata, make_score):
+    _seed(make_member, make_trade, make_ticker_metadata, make_score)
+
+    house_only = gql(client, TRADES_QUERY, {"chamber": "HOUSE"})
+    assert [t["ticker"] for t in house_only["trades"]["results"]] == ["AAPL"]
+
+    senate_only = gql(client, TRADES_QUERY, {"chamber": "SENATE"})
+    assert [t["ticker"] for t in senate_only["trades"]["results"]] == ["MSFT"]
 
 
 def test_trades_pagination(client, make_member, make_trade):

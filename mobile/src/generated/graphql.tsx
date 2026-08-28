@@ -115,10 +115,12 @@ export type QueryPoliticiansArgs = {
 
 
 export type QueryTradesArgs = {
+  chamber?: InputMaybe<Chamber>;
   from?: InputMaybe<Scalars['Date']['input']>;
   limit?: Scalars['Int']['input'];
   offset?: Scalars['Int']['input'];
   politicianId?: InputMaybe<Scalars['ID']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
   ticker?: InputMaybe<Scalars['String']['input']>;
   to?: InputMaybe<Scalars['Date']['input']>;
 };
@@ -186,6 +188,9 @@ export type PoliticianDetailQueryVariables = Exact<{
 export type PoliticianDetailQuery = { __typename?: 'Query', politician?: { __typename?: 'Politician', id: string, fullName: string, chamber: Chamber, party: Party, state: string, district?: string | null, photoUrl?: string | null, performance?: number | null, portfolioReturn?: { __typename?: 'PortfolioReturnType', realizedPnl?: number | null, realizedPnlPct?: number | null, unrealizedPnl?: number | null, unrealizedPnlPct?: number | null } | null, sectorBreakdown: Array<{ __typename?: 'SectorBreakdownEntry', sector: string, amountMid: number }>, trades: { __typename?: 'TradeConnection', totalCount: number, results: Array<{ __typename?: 'Trade', id: string, ticker?: string | null, assetNameRaw: string, transactionType: TransactionType, transactionDate: string, disclosureDate: string, amountMin: number, amountMax: number, performance?: number | null }> } } | null };
 
 export type TradesFeedQueryVariables = Exact<{
+  search?: InputMaybe<Scalars['String']['input']>;
+  ticker?: InputMaybe<Scalars['String']['input']>;
+  chamber?: InputMaybe<Chamber>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 }>;
@@ -271,8 +276,14 @@ export type PoliticianDetailLazyQueryHookResult = ReturnType<typeof usePoliticia
 export type PoliticianDetailSuspenseQueryHookResult = ReturnType<typeof usePoliticianDetailSuspenseQuery>;
 export type PoliticianDetailQueryResult = Apollo.QueryResult<PoliticianDetailQuery, PoliticianDetailQueryVariables>;
 export const TradesFeedDocument = gql`
-    query TradesFeed($limit: Int, $offset: Int) {
-  trades(limit: $limit, offset: $offset) {
+    query TradesFeed($search: String, $ticker: String, $chamber: Chamber, $limit: Int, $offset: Int) {
+  trades(
+    search: $search
+    ticker: $ticker
+    chamber: $chamber
+    limit: $limit
+    offset: $offset
+  ) {
     totalCount
     results {
       id
@@ -303,6 +314,9 @@ export const TradesFeedDocument = gql`
  * @example
  * const { data, loading, error } = useTradesFeedQuery({
  *   variables: {
+ *      search: // value for 'search'
+ *      ticker: // value for 'ticker'
+ *      chamber: // value for 'chamber'
  *      limit: // value for 'limit'
  *      offset: // value for 'offset'
  *   },

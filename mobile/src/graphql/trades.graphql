@@ -1,5 +1,5 @@
-query TradesFeed($limit: Int, $offset: Int) {
-  trades(limit: $limit, offset: $offset) {
+query TradesFeed($search: String, $ticker: String, $chamber: Chamber, $limit: Int, $offset: Int) {
+  trades(search: $search, ticker: $ticker, chamber: $chamber, limit: $limit, offset: $offset) {
     totalCount
     results {
       id

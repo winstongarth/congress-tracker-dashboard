@@ -1,24 +1,46 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ActiveFilterChips } from "@/components/ActiveFilterChips";
+import type { ActiveFilter } from "@/components/ActiveFilterChips";
+import { ChamberFilter } from "@/components/ChamberFilter";
 import { ErrorState } from "@/components/ErrorState";
 import { FeedEmptyState } from "@/components/FeedEmptyState";
+import { TextFilterInput } from "@/components/TextFilterInput";
 import { TradeRow } from "@/components/TradeRow";
 import { TradeRowSkeleton } from "@/components/TradeRowSkeleton";
-import { useTradesFeedQuery } from "@/generated/graphql";
+import { Chamber, useTradesFeedQuery } from "@/generated/graphql";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 const PAGE_SIZE = 20;
 const INITIAL_SKELETON_ROWS = 8;
+const DEBOUNCE_MS = 400;
+
+const CHAMBER_LABEL: Record<Chamber, string> = {
+  [Chamber.House]: "House",
+  [Chamber.Senate]: "Senate",
+};
 
 export default function TradesFeedScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [tickerInput, setTickerInput] = useState("");
+  const [chamber, setChamber] = useState<Chamber | null>(null);
+
+  const search = useDebouncedValue(searchInput.trim(), DEBOUNCE_MS) || undefined;
+  const ticker = useDebouncedValue(tickerInput.trim(), DEBOUNCE_MS) || undefined;
+
+  // search/ticker/chamber are query variables, not a client-side filter --
+  // the backend (app/graphql/queries.py Query.trades) does the matching, so
+  // every page fetched (including infinite-scroll pages below) is already
+  // filtered server-side.
   const { data, loading, error, refetch, fetchMore } = useTradesFeedQuery({
-    variables: { limit: PAGE_SIZE, offset: 0 },
+    variables: { search, ticker, chamber: chamber ?? undefined, limit: PAGE_SIZE, offset: 0 },
     notifyOnNetworkStatusChange: true,
   });
 
@@ -26,10 +48,24 @@ export default function TradesFeedScreen() {
   const totalCount = data?.trades.totalCount ?? 0;
   const hasMore = trades.length < totalCount;
 
+  const activeFilters = useMemo<ActiveFilter[]>(() => {
+    const filters: ActiveFilter[] = [];
+    if (searchInput.trim()) {
+      filters.push({ key: "search", label: `"${searchInput.trim()}"`, onDismiss: () => setSearchInput("") });
+    }
+    if (tickerInput.trim()) {
+      filters.push({ key: "ticker", label: tickerInput.trim().toUpperCase(), onDismiss: () => setTickerInput("") });
+    }
+    if (chamber) {
+      filters.push({ key: "chamber", label: CHAMBER_LABEL[chamber], onDismiss: () => setChamber(null) });
+    }
+    return filters;
+  }, [searchInput, tickerInput, chamber]);
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await refetch({ limit: PAGE_SIZE, offset: 0 });
+      await refetch({ offset: 0 });
     } finally {
       setRefreshing(false);
     }
@@ -40,7 +76,7 @@ export default function TradesFeedScreen() {
     setLoadingMore(true);
     try {
       await fetchMore({
-        variables: { limit: PAGE_SIZE, offset: trades.length },
+        variables: { offset: trades.length },
         updateQuery: (previous, { fetchMoreResult }) => {
           if (!fetchMoreResult) return previous;
           return {
@@ -59,6 +95,15 @@ export default function TradesFeedScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: "Trades" }} />
+
+      <View style={styles.filterBar}>
+        <TextFilterInput value={searchInput} onChangeText={setSearchInput} placeholder="Search politician, ticker, asset..." />
+        <View style={styles.filterRow}>
+          <TextFilterInput value={tickerInput} onChangeText={setTickerInput} placeholder="Ticker" style={styles.tickerInput} />
+          <ChamberFilter value={chamber} onChange={setChamber} />
+        </View>
+      </View>
+      <ActiveFilterChips filters={activeFilters} />
 
       {error && !data ? (
         <ErrorState title="Could not load trades" message={error.message} onRetry={() => refetch()} />
@@ -89,6 +134,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  filterBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 8,
+  },
+  filterRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+  },
+  tickerInput: {
+    width: 110,
   },
   listContent: {
     flexGrow: 1,
