@@ -14,6 +14,10 @@ export function formatAmountRange(min: number, max: number): string {
   return `${currencyFormatter.format(min)} - ${currencyFormatter.format(max)}`;
 }
 
+export function formatCurrency(amount: number): string {
+  return currencyFormatter.format(amount);
+}
+
 export function formatDisclosureDate(isoDate: string): string {
   // Dates come back as "YYYY-MM-DD" with no time component; parsing that
   // directly with `new Date(...)` treats it as UTC midnight, which can

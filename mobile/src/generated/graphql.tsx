@@ -176,6 +176,15 @@ export enum TransactionType {
   Sell = 'SELL'
 }
 
+export type PoliticianDetailQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+  tradesLimit?: InputMaybe<Scalars['Int']['input']>;
+  tradesOffset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type PoliticianDetailQuery = { __typename?: 'Query', politician?: { __typename?: 'Politician', id: string, fullName: string, chamber: Chamber, party: Party, state: string, district?: string | null, photoUrl?: string | null, performance?: number | null, portfolioReturn?: { __typename?: 'PortfolioReturnType', realizedPnl?: number | null, realizedPnlPct?: number | null, unrealizedPnl?: number | null, unrealizedPnlPct?: number | null } | null, sectorBreakdown: Array<{ __typename?: 'SectorBreakdownEntry', sector: string, amountMid: number }>, trades: { __typename?: 'TradeConnection', totalCount: number, results: Array<{ __typename?: 'Trade', id: string, ticker?: string | null, assetNameRaw: string, transactionType: TransactionType, transactionDate: string, disclosureDate: string, amountMin: number, amountMax: number, performance?: number | null }> } } | null };
+
 export type TradesFeedQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -185,6 +194,82 @@ export type TradesFeedQueryVariables = Exact<{
 export type TradesFeedQuery = { __typename?: 'Query', trades: { __typename?: 'TradeConnection', totalCount: number, results: Array<{ __typename?: 'Trade', id: string, ticker?: string | null, assetNameRaw: string, transactionType: TransactionType, disclosureDate: string, amountMin: number, amountMax: number, politician: { __typename?: 'Politician', id: string, fullName: string } }> } };
 
 
+export const PoliticianDetailDocument = gql`
+    query PoliticianDetail($id: ID!, $tradesLimit: Int, $tradesOffset: Int) {
+  politician(id: $id) {
+    id
+    fullName
+    chamber
+    party
+    state
+    district
+    photoUrl
+    performance
+    portfolioReturn {
+      realizedPnl
+      realizedPnlPct
+      unrealizedPnl
+      unrealizedPnlPct
+    }
+    sectorBreakdown {
+      sector
+      amountMid
+    }
+    trades(limit: $tradesLimit, offset: $tradesOffset) {
+      totalCount
+      results {
+        id
+        ticker
+        assetNameRaw
+        transactionType
+        transactionDate
+        disclosureDate
+        amountMin
+        amountMax
+        performance
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __usePoliticianDetailQuery__
+ *
+ * To run a query within a React component, call `usePoliticianDetailQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePoliticianDetailQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePoliticianDetailQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *      tradesLimit: // value for 'tradesLimit'
+ *      tradesOffset: // value for 'tradesOffset'
+ *   },
+ * });
+ */
+export function usePoliticianDetailQuery(baseOptions: Apollo.QueryHookOptions<PoliticianDetailQuery, PoliticianDetailQueryVariables> & ({ variables: PoliticianDetailQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PoliticianDetailQuery, PoliticianDetailQueryVariables>(PoliticianDetailDocument, options);
+      }
+export function usePoliticianDetailLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PoliticianDetailQuery, PoliticianDetailQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PoliticianDetailQuery, PoliticianDetailQueryVariables>(PoliticianDetailDocument, options);
+        }
+// @ts-ignore
+export function usePoliticianDetailSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<PoliticianDetailQuery, PoliticianDetailQueryVariables>): Apollo.UseSuspenseQueryResult<PoliticianDetailQuery, PoliticianDetailQueryVariables>;
+export function usePoliticianDetailSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PoliticianDetailQuery, PoliticianDetailQueryVariables>): Apollo.UseSuspenseQueryResult<PoliticianDetailQuery | undefined, PoliticianDetailQueryVariables>;
+export function usePoliticianDetailSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PoliticianDetailQuery, PoliticianDetailQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PoliticianDetailQuery, PoliticianDetailQueryVariables>(PoliticianDetailDocument, options);
+        }
+export type PoliticianDetailQueryHookResult = ReturnType<typeof usePoliticianDetailQuery>;
+export type PoliticianDetailLazyQueryHookResult = ReturnType<typeof usePoliticianDetailLazyQuery>;
+export type PoliticianDetailSuspenseQueryHookResult = ReturnType<typeof usePoliticianDetailSuspenseQuery>;
+export type PoliticianDetailQueryResult = Apollo.QueryResult<PoliticianDetailQuery, PoliticianDetailQueryVariables>;
 export const TradesFeedDocument = gql`
     query TradesFeed($limit: Int, $offset: Int) {
   trades(limit: $limit, offset: $offset) {

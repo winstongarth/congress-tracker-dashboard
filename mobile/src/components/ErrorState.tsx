@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export function FeedErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+export function ErrorState({ title, message, onRetry }: { title: string; message: string; onRetry: () => void }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Could not load trades</Text>
+      <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{message}</Text>
       <Pressable style={styles.button} onPress={onRetry} accessibilityRole="button">
         <Text style={styles.buttonText}>Retry</Text>

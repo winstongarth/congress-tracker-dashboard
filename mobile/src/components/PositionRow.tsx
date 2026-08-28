@@ -1,24 +1,18 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
-import type { TradesFeedQuery } from "@/generated/graphql";
-import { formatAmountRange, formatDisclosureDate } from "@/lib/format";
 import { TransactionBadge } from "@/components/TransactionBadge";
+import type { PoliticianDetailQuery } from "@/generated/graphql";
+import { formatAmountRange, formatDisclosureDate } from "@/lib/format";
 
-type FeedTrade = TradesFeedQuery["trades"]["results"][number];
+type PoliticianTrade = NonNullable<PoliticianDetailQuery["politician"]>["trades"]["results"][number];
 
-export function TradeRow({ trade }: { trade: FeedTrade }) {
-  const router = useRouter();
-
+// Same information as the feed's TradeRow, minus the politician name -- this
+// list already lives on that politician's own screen -- and not tappable,
+// since there's nowhere further to navigate to from here yet.
+export function PositionRow({ trade }: { trade: PoliticianTrade }) {
   return (
-    <Pressable
-      onPress={() => router.push({ pathname: "/politician/[id]", params: { id: trade.politician.id } })}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-    >
+    <View style={styles.row}>
       <View style={styles.mainColumn}>
-        <Text style={styles.politician} numberOfLines={1}>
-          {trade.politician.fullName}
-        </Text>
         <Text style={styles.ticker} numberOfLines={1}>
           {trade.ticker ?? trade.assetNameRaw}
         </Text>
@@ -28,7 +22,7 @@ export function TradeRow({ trade }: { trade: FeedTrade }) {
         <TransactionBadge type={trade.transactionType} />
         <Text style={styles.date}>{formatDisclosureDate(trade.disclosureDate)}</Text>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
@@ -43,21 +37,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#D8D8D8",
   },
-  rowPressed: {
-    backgroundColor: "#F5F5F5",
-  },
   mainColumn: {
     flex: 1,
     marginRight: 12,
     gap: 2,
   },
-  politician: {
+  ticker: {
     fontSize: 15,
     fontWeight: "600",
-  },
-  ticker: {
-    fontSize: 13,
-    color: "#5F6368",
   },
   amount: {
     fontSize: 13,

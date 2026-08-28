@@ -3,8 +3,8 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ErrorState } from "@/components/ErrorState";
 import { FeedEmptyState } from "@/components/FeedEmptyState";
-import { FeedErrorState } from "@/components/FeedErrorState";
 import { TradeRow } from "@/components/TradeRow";
 import { TradeRowSkeleton } from "@/components/TradeRowSkeleton";
 import { useTradesFeedQuery } from "@/generated/graphql";
@@ -61,7 +61,7 @@ export default function TradesFeedScreen() {
       <Stack.Screen options={{ title: "Trades" }} />
 
       {error && !data ? (
-        <FeedErrorState message={error.message} onRetry={() => refetch()} />
+        <ErrorState title="Could not load trades" message={error.message} onRetry={() => refetch()} />
       ) : loading && !data ? (
         <View>
           {Array.from({ length: INITIAL_SKELETON_ROWS }).map((_, index) => (

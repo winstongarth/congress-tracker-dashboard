@@ -1,0 +1,42 @@
+# Single round trip for everything the detail screen needs: profile,
+# performance rollup, portfolio return, sector breakdown, AND the trade list
+# with per-trade performance. The REST equivalent needs at least two calls --
+# GET /members/{id} for the profile+rollup, then GET /trades?member_id=...
+# for the trade list -- since REST's /members/{id} response doesn't nest
+# trades (app/api/schemas.py MemberDetail has no `trades` field).
+query PoliticianDetail($id: ID!, $tradesLimit: Int, $tradesOffset: Int) {
+  politician(id: $id) {
+    id
+    fullName
+    chamber
+    party
+    state
+    district
+    photoUrl
+    performance
+    portfolioReturn {
+      realizedPnl
+      realizedPnlPct
+      unrealizedPnl
+      unrealizedPnlPct
+    }
+    sectorBreakdown {
+      sector
+      amountMid
+    }
+    trades(limit: $tradesLimit, offset: $tradesOffset) {
+      totalCount
+      results {
+        id
+        ticker
+        assetNameRaw
+        transactionType
+        transactionDate
+        disclosureDate
+        amountMin
+        amountMax
+        performance
+      }
+    }
+  }
+}
