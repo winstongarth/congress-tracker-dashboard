@@ -1,11 +1,11 @@
-"""Step 5 (CLAUDE.md Sec 5): price backfill. For every ticker with at least
-one trade, backfill price_history from the earliest trade date to today.
-Re-running only fetches the gap since the last stored date, not the whole
-history again -- "never re-fetch something you already have" (Sec 2)
-applies to price data the same as to filing pages.
+"""Price backfill: for every ticker with at least one trade, backfill
+price_history from the earliest trade date to today. Re-running only
+fetches the gap since the last stored date, not the whole history again --
+"never re-fetch something you already have" applies to price data the same
+as to filing pages.
 
-yfinance is the documented single-point-of-failure (CLAUDE.md Sec 3) --
-kept behind this one function so the data source can be swapped later.
+yfinance is the documented single-point-of-failure here -- kept behind this
+one function so the data source can be swapped later.
 """
 
 from __future__ import annotations

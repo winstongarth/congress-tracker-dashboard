@@ -7,9 +7,9 @@ window around that trade's date, so it catches members who moved slightly
 before or after). Sells/exchanges aren't about buying clusters, so they're
 left out, same as conviction.
 
-Bipartisan overlap flag is computed separately (CLAUDE.md is explicit this
-is a distinct, less-partisan-driven signal worth surfacing on its own, not
-folded into the overlap count).
+Bipartisan overlap flag is computed separately -- it's a distinct,
+less-partisan-driven signal worth surfacing on its own, not folded into
+the overlap count.
 """
 
 from __future__ import annotations

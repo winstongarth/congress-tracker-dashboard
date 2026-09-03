@@ -76,9 +76,8 @@ def match_exit_dates(trades: list[Trade]) -> dict[int, dt.date]:
 
 def compute_performance(session: Session, trades: list[Trade]) -> dict[int, float]:
     """trade_id -> raw (unnormalized) performance percentage for every
-    buy/sell stock trade with a resolved ticker. Caller normalizes (Sec 7
-    preamble: every sub-score is percentile-ranked within its population
-    before combining).
+    buy/sell stock trade with a resolved ticker. Caller normalizes: every
+    sub-score is percentile-ranked within its population before combining.
     """
     scoreable = [t for t in trades if t.ticker and t.asset_type == "stock" and t.transaction_type in ("buy", "sell")]
     tickers = {t.ticker for t in scoreable}

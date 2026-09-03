@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
-// Introspects the live GraphQL schema, so the backend (app/graphql, Phase 1)
+// Introspects the live GraphQL schema, so the backend (app/graphql)
 // must be running locally when you run `npm run codegen`. Uses the same
 // EXPO_PUBLIC_API_URL as the app itself (see .env.example) so there's one
 // source of truth for "where's the backend."

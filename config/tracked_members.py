@@ -5,7 +5,7 @@ this list is for when you want to scope back down to a curated subset.
 Entries are resolved to member_id (bioguide_id) against the `members` table
 after each roster scrape, by name + state, rather than hardcoding bioguide
 IDs here -- a wrong hardcoded ID would silently corrupt every trade pulled
-for that "member" (CLAUDE.md Sec 9). See app/selection/top30.py:resolve_manual_list.
+for that "member". See app/selection/top30.py:resolve_manual_list.
 """
 
 MANUAL_TRACKED_MEMBERS = [

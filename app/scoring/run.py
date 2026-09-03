@@ -1,12 +1,12 @@
-"""Orchestrates Phase 2 (CLAUDE.md Sec 7): runs every sub-score against
-whatever's currently in `trades`, normalizes each to 0-100 within its own
-population, computes the composite, and writes everything to `scores`
-(trade-level rows) plus `trades.committee_relevant` (the one flag that lives
-directly on the trade row -- see committee_relevance.py for why).
+"""Orchestrates the scoring stage: runs every sub-score against whatever's
+currently in `trades`, normalizes each to 0-100 within its own population,
+computes the composite, and writes everything to `scores` (trade-level rows)
+plus `trades.committee_relevant` (the one flag that lives directly on the
+trade row -- see committee_relevance.py for why).
 
 Scores are recomputed wholesale on each run, not incrementally -- the table
-is documented as "recomputed on each scoring run, not derived live" (Sec 4),
-so stale rows for trade_ids no longer scoreable would otherwise accumulate.
+is documented as "recomputed on each scoring run, not derived live", so
+stale rows for trade_ids no longer scoreable would otherwise accumulate.
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def run_scoring(session: Session) -> dict[str, int]:
             )
     session.add_all(score_rows)
 
-    # Member-level performance rollup (Sec 7.1: "rolls up to per-member").
+    # Member-level performance rollup: performance also rolls up to per-member.
     session.execute(delete(Score).where(Score.trade_id.is_(None), Score.score_type == "performance"))
     member_trade_perf: dict[str, list[float]] = {}
     for trade_id, value in performance_pct.items():

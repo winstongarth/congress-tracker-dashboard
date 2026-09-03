@@ -1,6 +1,6 @@
-"""Regression coverage for the Phase 1 constraint: zero changes to existing
-REST response shapes, even though the underlying score/metric lookups were
-extracted into app/services/* so GraphQL could reuse them."""
+"""Regression coverage ensuring zero changes to existing REST response
+shapes, even though the underlying score/metric lookups were extracted
+into app/services/* so GraphQL could reuse them."""
 
 from __future__ import annotations
 

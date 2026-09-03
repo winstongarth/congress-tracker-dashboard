@@ -1,5 +1,5 @@
-"""Top 30 member selection strategies (CLAUDE.md Sec 6). Named and swappable
-via settings.selection_method, not a hardcoded list.
+"""Top 30 member selection strategies. Named and swappable via
+settings.selection_method, not a hardcoded list.
 """
 
 from __future__ import annotations
@@ -35,8 +35,8 @@ def resolve_manual_list(session: Session) -> list[str]:
 
 def select_all(session: Session) -> list[str]:
     """Every active member, both chambers -- no filtering at all. Default as
-    of the move away from a curated subset; CLAUDE.md's "Top 30" framing
-    still applies if you switch back to "manual" or a ranked method later.
+    of the move away from a curated subset; the "Top 30" framing still
+    applies if you switch back to "manual" or a ranked method later.
     """
     return list(session.scalars(select(Member.member_id).where(Member.active.is_(True))))
 
@@ -49,6 +49,6 @@ def select_top30(session: Session, method: str | None = None) -> list[str]:
         return resolve_manual_list(session)
     raise NotImplementedError(
         f"selection_method={method!r} needs at least one full trade-scrape cycle "
-        "of history before it's meaningful (CLAUDE.md Sec 6) -- not available yet "
-        "in a fresh Phase 1 ingestion run."
+        "of history before it's meaningful -- not available yet on a fresh "
+        "database with no ingested trades."
     )

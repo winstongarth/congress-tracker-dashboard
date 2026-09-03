@@ -1,4 +1,4 @@
-"""CLAUDE.md Sec 10 entry points: Phase 1 ingestion + Phase 2 scoring.
+"""CLI entry points: data ingestion + scoring.
 
 Usage:
     python -m app.cli init-db
@@ -48,8 +48,8 @@ def _upsert_trades(session, rows: list[dict]) -> int:
     (amended) version of the same filing_id naturally replace the old rows.
     Cross-filing amendments (a new DocID amending an old one) aren't linked
     automatically -- the House index doesn't say which DocID an amendment
-    supersedes, so both stay on file (CLAUDE.md Sec 9 flags this as a known
-    gotcha, not something Phase 1 needs to fully resolve).
+    supersedes, so both stay on file. This is a known gotcha, not something
+    the ingestion pipeline needs to fully resolve.
     """
     filing_ids = {row["filing_id"] for row in rows}
     if filing_ids:
@@ -149,7 +149,7 @@ def cmd_normalize(_args: argparse.Namespace) -> None:
 
 
 def cmd_score(_args: argparse.Namespace) -> None:
-    """Phase 2 (CLAUDE.md Sec 7): price backfill + every sub-score + composite."""
+    """Scoring stage: price backfill + every sub-score + composite."""
     with get_session() as session:
         summary = run_scoring(session)
     print(

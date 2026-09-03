@@ -1,9 +1,9 @@
 """7.5 Committee relevance flag (per trade).
 
 Cross-references the member's committees against the ticker's sector/industry
-via config/committee_sector_map.py. Qualitative badge/filter, not part of the
-numeric composite by design (CLAUDE.md Sec 7.5) -- surfaced as a boolean on
-the trade itself (Trade.committee_relevant) for direct dashboard filtering.
+via config/committee_sector_map.py. Qualitative badge/filter, deliberately
+not part of the numeric composite -- surfaced as a boolean on the trade
+itself (Trade.committee_relevant) for direct dashboard filtering.
 """
 
 from __future__ import annotations

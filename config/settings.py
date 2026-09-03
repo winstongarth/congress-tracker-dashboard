@@ -1,5 +1,5 @@
-"""Central config. Every value CLAUDE.md marks [CONFIG] lives here, not as a
-hardcoded constant elsewhere in the codebase."""
+"""Central config. Every tunable value lives here, not as a hardcoded
+constant elsewhere in the codebase."""
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     # --- member selection [CONFIG] ---
     selection_method: str = "all"  # "all" | "volume" | "frequency" | "performance" | "manual"
 
-    # --- scoring engine [CONFIG] (Phase 2, defined here so weights are versioned in one place) ---
+    # --- scoring engine [CONFIG] (defined here so weights are versioned in one place) ---
     recency_half_life_days: int = 90
     overlap_window_days: int = 60
     composite_weight_performance: float = 0.35

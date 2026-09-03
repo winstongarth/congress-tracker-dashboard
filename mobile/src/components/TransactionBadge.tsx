@@ -4,7 +4,7 @@ import { TransactionType } from "@/generated/graphql";
 
 // Buy/sell/exchange must be distinguishable without relying on colour alone,
 // so each badge also carries a distinct glyph and text label. Shared by the
-// feed row (Phase 3) and the politician detail holdings list (Phase 4).
+// trades feed row and the politician detail holdings list.
 const TRANSACTION_BADGE: Record<TransactionType, { label: string; glyph: string; background: string; foreground: string }> = {
   [TransactionType.Buy]: { label: "BUY", glyph: "▲", background: "#E6F4EA", foreground: "#1E7E34" },
   [TransactionType.Sell]: { label: "SELL", glyph: "▼", background: "#FCE8E6", foreground: "#B3261E" },

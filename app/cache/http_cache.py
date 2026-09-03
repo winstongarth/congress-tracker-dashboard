@@ -1,6 +1,6 @@
-"""Shared fetch layer enforcing CLAUDE.md's scraping etiquette (Sec 2):
-cache every fetched page/PDF by a stable key, rate-limit, identify the
-client, and respect robots.txt where applicable.
+"""Shared fetch layer enforcing scraping etiquette: cache every fetched
+page/PDF by a stable key, rate-limit, identify the client, and respect
+robots.txt where applicable.
 """
 
 from __future__ import annotations

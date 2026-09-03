@@ -1,7 +1,7 @@
-"""Step 3 (Senate half): Senate eFD Periodic Transaction Report scraping.
+"""Senate half of the ingestion pipeline: Senate eFD Periodic Transaction Report scraping.
 
 efdsearch.senate.gov requires accepting a click-wrap agreement before search
-becomes available (CLAUDE.md Sec 2), and its bot protection (Akamai) blocks
+becomes available, and its bot protection (Akamai) blocks
 every plain HTTP client -- confirmed directly: httpx, PowerShell
 Invoke-WebRequest, and even headless Chromium (both legacy headless and the
 newer `--headless=new` mode) all get a 403. Only a real, non-headless browser
@@ -21,8 +21,8 @@ hidden fields the JS adds get filled in correctly because it's the same code
 path a real user's click takes.
 
 efdsearch.senate.gov's terms restrict commercial redistribution of this
-data. CLAUDE.md positions this project as personal/educational; read the
-site's terms yourself before relying on this for anything else.
+data. This project is personal/educational; read the site's terms yourself
+before relying on this for anything else.
 """
 
 from __future__ import annotations
@@ -167,8 +167,8 @@ def _transaction_type_from_label(label: str) -> str:
 def parse_ptr_detail_html(html: str) -> list[dict]:
     """Parses an e-filed Senate PTR's HTML transaction table into raw dicts.
     Returns [] for paper/scanned filings (no table present) -- caller should
-    log those for manual review, not treat them as "no transactions"
-    (CLAUDE.md Sec 9: scanned filings need OCR, not silent skipping).
+    log those for manual review, not treat them as "no transactions";
+    scanned filings need OCR, not silent skipping.
     """
     soup = BeautifulSoup(html, "lxml")
     table = soup.find("table")
@@ -222,7 +222,7 @@ def parse_ptr_detail_html(html: str) -> list[dict]:
 
 
 def build_trade_rows(member_id: str, filing: SenateFiling, parsed_items: list[dict]) -> list[dict]:
-    """Maps parsed Senate PTR line items onto trades-table-shaped dicts (CLAUDE.md Sec 4)."""
+    """Maps parsed Senate PTR line items onto trades-table-shaped dicts."""
     rows = []
     for item in parsed_items:
         amount_min, amount_max = item["amount_min"], item["amount_max"]

@@ -1,16 +1,15 @@
-"""Step 4 (CLAUDE.md Sec 5): asset_name_raw -> ticker normalization.
+"""asset_name_raw -> ticker normalization.
 
 Reference data: NASDAQ Trader's symbol directory (nasdaqlisted.txt +
 otherlisted.txt) -- a free, no-key bulk file covering every
-NASDAQ/NYSE/NYSE American/ARCA listed ticker + company name. Matching order,
-per CLAUDE.md Sec 5 Step 4:
+NASDAQ/NYSE/NYSE American/ARCA listed ticker + company name. Matching order:
   1. exact ticker match, if the scraper already pulled a ticker guess out of
      the filing itself (e.g. House PTRs annotate "(TICKER)" inline)
   2. fuzzy company-name match against the reference table otherwise
   3. below ticker_match_confidence_threshold [CONFIG]: ticker stored as None,
      confidence stored as whatever was found -- query `trades` where
-     ticker IS NULL for the manual-review queue (CLAUDE.md Sec 9), rather
-     than maintaining a separate review table not in the Sec 4 schema.
+     ticker IS NULL for the manual-review queue, rather than maintaining a
+     separate review table.
 """
 
 from __future__ import annotations
@@ -75,8 +74,8 @@ def normalize_trade_row(row: dict, reference: dict[str, str]) -> dict:
     """Mutates and returns a trades-table-shaped row dict: resolves
     ticker/ticker_match_confidence and drops the scraper's private ticker
     guess field. No-op (ticker stays None) for non-stock asset types --
-    v1 is stocks-only (CLAUDE.md Sec 9); fuzzy-matching a bond/option/fund
-    description against an equity ticker list would just produce noise.
+    v1 is stocks-only; fuzzy-matching a bond/option/fund description against
+    an equity ticker list would just produce noise.
     """
     ticker_guess = row.pop("_raw_ticker_guess", None)
     if row.get("asset_type") != "stock":
@@ -90,10 +89,10 @@ def normalize_trade_row(row: dict, reference: dict[str, str]) -> dict:
 
 
 def fetch_ticker_metadata(ticker: str) -> dict | None:
-    """Sector/industry via yfinance (CLAUDE.md Sec 3: documented
-    single-point-of-failure, kept behind this one function so it's easy to
-    swap providers later). Returns None on any failure rather than raising --
-    missing metadata shouldn't block trade ingestion.
+    """Sector/industry via yfinance (a documented single-point-of-failure,
+    kept behind this one function so it's easy to swap providers later).
+    Returns None on any failure rather than raising -- missing metadata
+    shouldn't block trade ingestion.
     """
     try:
         import yfinance as yf

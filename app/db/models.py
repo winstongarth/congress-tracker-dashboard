@@ -1,4 +1,4 @@
-"""SQLAlchemy models mirroring the data model in CLAUDE.md Sec 4 field-for-field."""
+"""SQLAlchemy models mirroring the application's data model field-for-field."""
 
 from __future__ import annotations
 
@@ -55,11 +55,11 @@ class Trade(Base):
     amount_mid: Mapped[float] = mapped_column(Numeric, nullable=False)  # computed midpoint
     source_url: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
-    # Sec 7.5: qualitative badge/filter, deliberately not folded into the
-    # numeric composite score -- lives on the row itself since the dashboard
-    # filters trades by it directly (Sec 8), not via a scores-table join.
+    # Qualitative badge/filter, deliberately not folded into the numeric
+    # composite score -- lives on the row itself since the dashboard filters
+    # trades by it directly, not via a scores-table join.
     committee_relevant: Mapped[bool] = mapped_column(Boolean, default=False)
-    # Sec 7.4: "worth surfacing distinctly in the UI" -- same reasoning as
+    # Worth surfacing distinctly in the UI -- same reasoning as
     # committee_relevant, denormalized here for direct dashboard filtering.
     bipartisan_overlap: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -83,16 +83,16 @@ class PriceHistory(Base):
 
 
 class Score(Base):
-    """Recomputed on each scoring run, not derived live in the UI (CLAUDE.md Sec 4/7)."""
+    """Recomputed on each scoring run, not derived live in the UI."""
 
     __tablename__ = "scores"
 
     score_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     member_id: Mapped[str] = mapped_column(ForeignKey("members.member_id"), nullable=False)
     ticker: Mapped[str | None] = mapped_column(String, nullable=True)  # nullable for member-level-only scores
-    # Sec 7 repeatedly scopes performance/recency/composite as "per trade"
-    # rather than per member+ticker -- nullable FK so those can attach to one
-    # specific trade, while member-level rollups and ticker-level aggregates
+    # performance/recency/composite scores are scoped "per trade" rather than
+    # per member+ticker -- nullable FK so those can attach to one specific
+    # trade, while member-level rollups and ticker-level aggregates
     # (conviction, ticker overlap) leave this null and use member_id/ticker alone.
     # CASCADE: scores are recomputed wholesale on every `score` run anyway, so
     # a deleted trade (re-scraping a filing, an amendment superseding rows)
@@ -107,10 +107,10 @@ class Score(Base):
 
 class PortfolioReturn(Base):
     """Member-level realized/unrealized P&L. Kept out of `scores` deliberately:
-    everything in that table is a 0-100 percentile-ranked sub-score (CLAUDE.md
-    Sec 7's preamble), while these are real dollar amounts and percentages --
-    a different kind of number with its own table, recomputed wholesale on
-    each `score` run same as everything else (not derived live in the UI).
+    everything in that table is a 0-100 percentile-ranked sub-score, while
+    these are real dollar amounts and percentages -- a different kind of
+    number with its own table, recomputed wholesale on each `score` run same
+    as everything else (not derived live in the UI).
     """
 
     __tablename__ = "portfolio_returns"

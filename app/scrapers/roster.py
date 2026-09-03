@@ -1,6 +1,6 @@
-"""Step 1 of the pipeline (CLAUDE.md Sec 5): member roster + committee
-assignments. Bio data comes from api.congress.gov; committees come from
-clerk.house.gov / senate.gov directly (see committees.py for why).
+"""First stage of the pipeline: member roster + committee assignments. Bio
+data comes from api.congress.gov; committees come from clerk.house.gov /
+senate.gov directly (see committees.py for why).
 
 Re-run weekly: rosters change rarely, but committee assignments shift
 between sessions.

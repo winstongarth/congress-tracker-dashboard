@@ -4,10 +4,10 @@ composite = w1*performance + w2*overlap + w3*conviction + w4*recency_weight
 
 Weights [CONFIG: default w1=0.35, w2=0.30, w3=0.20, w4=0.15], versioned by
 logging every weight change with a timestamp (data/weight_changes.log) so
-past rankings stay comparable to current ones (CLAUDE.md Sec 7.6).
+past rankings stay comparable to current ones.
 
 Interpretive note: overlap and conviction are only defined for *buy* trades
-(CLAUDE.md scopes both to buying behavior). Sell trades still get a
+(both are scoped to buying behavior). Sell trades still get a
 composite score from their performance + recency components, but with
 overlap/conviction defaulted to the population median (50, a neutral
 percentile) rather than 0 -- a sell isn't structurally "low conviction",

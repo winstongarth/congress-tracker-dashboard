@@ -2,7 +2,7 @@
 
 api.congress.gov has no committee-roster endpoint (confirmed against its own
 docs: /member and /committee never return who currently sits on a committee).
-So this hits clerk.house.gov and senate.gov directly, per CLAUDE.md Sec 2.
+So this hits clerk.house.gov and senate.gov directly instead.
 
 House: clerk.house.gov/xml/lists/MemberData.xml carries bioguideID plus
 committee/subcommittee codes for every member in one file. Codes are resolved

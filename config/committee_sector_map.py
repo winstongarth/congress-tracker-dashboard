@@ -1,9 +1,9 @@
-"""Committee name -> relevant sector/industry keywords (CLAUDE.md Sec 7.5).
+"""Committee name -> relevant sector/industry keywords.
 
-Deliberately a small, hand-maintained table, not an external data source --
-CLAUDE.md calls for "a small mapping table", and committee jurisdiction is
-fuzzy enough (e.g. Ways and Means touches nearly everything via tax policy)
-that some committees are intentionally left unmapped rather than guessed at.
+Deliberately a small, hand-maintained mapping table, not an external data
+source -- committee jurisdiction is fuzzy enough (e.g. Ways and Means
+touches nearly everything via tax policy) that some committees are
+intentionally left unmapped rather than guessed at.
 
 Matching is substring-based and case-insensitive in both directions: a
 committee name keyword found in the member's committee list, paired against

@@ -1,21 +1,19 @@
 """Member-level realized/unrealized portfolio return.
 
-Not part of CLAUDE.md's original §7 scoring spec -- added later as its own
-feature. Distinct from the §7.1 Performance score: that's a 0-100
-percentile rank for ranking trades against each other; this is an actual
-dollar P&L estimate for a member's whole portfolio.
+Added later as its own feature, distinct from the Performance score: that's
+a 0-100 percentile rank for ranking trades against each other; this is an
+actual dollar P&L estimate for a member's whole portfolio.
 
 Methodology: STOCK Act disclosures only give amount RANGES, never share
 counts, so exact P&L isn't recoverable. Implied shares = amount_mid / entry
 price approximates a position size from the disclosed range -- the same
-approximation CLAUDE.md already endorses for "all volume calculations" via
-amount_mid. These are estimates, not exact figures, same as everywhere else
-in this app.
+approximation used for all other volume calculations via amount_mid. These
+are estimates, not exact figures, same as everywhere else in this app.
 
-Position matching reuses §7.1's FIFO buy->sell pairing (same member +
-ticker + owner), so a buy counted as "closed" here is the same buy counted
-as closed for the performance score -- one consistent notion of what's
-still open vs. already sold.
+Position matching reuses the same FIFO buy->sell pairing as the performance
+score (same member + ticker + owner), so a buy counted as "closed" here is
+the same buy counted as closed for the performance score -- one consistent
+notion of what's still open vs. already sold.
 """
 
 from __future__ import annotations

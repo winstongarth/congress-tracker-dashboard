@@ -1,11 +1,11 @@
-"""Step 3 (House half) of the pipeline: Periodic Transaction Report (PTR) scraping.
+"""House half of the ingestion pipeline: Periodic Transaction Report (PTR) scraping.
 
 Source of truth: disclosures-clerk.house.gov publishes a bulk per-year ZIP
 (financial-pdfs/<year>FD.zip) containing an XML index of every filing (Last,
 First, FilingType, StateDst, Year, FilingDate, DocID). FilingType "P" = PTR.
 This is preferred over driving the site's search form per-member: it's the
 same official data, fetched in one request instead of N, which is friendlier
-to the "well-behaved client" etiquette in CLAUDE.md Sec 2.
+to the site as a well-behaved client.
 
 PTR PDFs live at:
   https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/{year}/{doc_id}.pdf
@@ -32,7 +32,7 @@ from app.cache.http_cache import CachedFetcher
 INDEX_ZIP_URL = "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/{year}FD.zip"
 PTR_PDF_URL = "https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/{year}/{doc_id}.pdf"
 
-# fd.house.gov/reference/asset-type-codes.aspx, mapped down to CLAUDE.md's
+# fd.house.gov/reference/asset-type-codes.aspx, mapped down to the
 # trades.asset_type enum (stock|option|bond|fund|crypto|other).
 ASSET_TYPE_CODE_MAP = {
     "ST": "stock",
@@ -248,7 +248,7 @@ def parse_ptr_text(text: str) -> list[dict]:
 def build_trade_rows(
     member_id: str, entry: FilingIndexEntry, parsed_items: list[dict]
 ) -> list[dict]:
-    """Maps parsed PTR line items onto trades-table-shaped dicts (CLAUDE.md Sec 4)."""
+    """Maps parsed PTR line items onto trades-table-shaped dicts."""
     source_url = PTR_PDF_URL.format(year=entry.year, doc_id=entry.doc_id)
     rows = []
     for item in parsed_items:

@@ -1,6 +1,6 @@
-"""Shared 0-100 normalization (CLAUDE.md Sec 7 preamble): every sub-score is
-normalized within its own population before being combined, so weights in
-the composite are comparable. Percentile rank, not min-max -- robust to the
+"""Shared 0-100 normalization: every sub-score is normalized within its own
+population before being combined, so weights in the composite are
+comparable. Percentile rank, not min-max -- robust to the
 extreme outliers that "amount disclosed as a range, sold 50000 shares" type
 trades produce (a min-max scale would let one whale trade compress
 everything else toward 0).

@@ -7,8 +7,8 @@ const COLUMN_GAP = 12;
 
 type PerformanceTrade = { id: string; ticker?: string | null; performance?: number | null };
 
-// Per-trade performance (0-100 percentile, CLAUDE.md Sec 7.1) as a bar chart,
-// one bar per scoreable trade, against a dashed median-percentile reference
+// Per-trade performance (0-100 percentile) as a bar chart, one bar per
+// scoreable trade, against a dashed median-percentile reference
 // line. Caller (politician detail screen) is responsible for the "no
 // performance data yet" empty state -- this renders nothing if there's
 // nothing scoreable to show.
