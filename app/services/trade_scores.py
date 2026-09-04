@@ -1,6 +1,5 @@
-"""Shared trade-level score lookup, used by both the REST /trades route and
-the GraphQL scores DataLoader so the two API layers never diverge on how a
-trade's performance/overlap/conviction/composite values are assembled."""
+"""Trade-level score lookup used by the REST /trades route: assembles a
+trade's performance/overlap/conviction/composite values."""
 
 from __future__ import annotations
 

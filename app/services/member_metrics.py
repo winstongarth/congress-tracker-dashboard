@@ -1,6 +1,5 @@
-"""Member-level metric lookups shared by the REST /members route and the
-GraphQL Politician type, so the performance rollup and sector breakdown are
-computed identically (and only once) in both API layers."""
+"""Member-level metric lookups used by the REST /members route: performance
+rollup and sector breakdown."""
 
 from __future__ import annotations
 

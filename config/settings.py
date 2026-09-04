@@ -12,11 +12,6 @@ class Settings(BaseSettings):
     congress_api_key: str = ""
     contact_email: str = "you@example.com"
 
-    # --- api [CONFIG] ---
-    # Gates GraphiQL and the relaxed CORS origin regex needed for the Expo
-    # dev client (see "Mobile dev" in the README). Never enable in prod.
-    debug: bool = False
-
     # --- scraping etiquette [CONFIG] ---
     request_delay_seconds: float = 2.5  # default: 1 request per 2-3 seconds
     cache_dir: str = "data/cache"

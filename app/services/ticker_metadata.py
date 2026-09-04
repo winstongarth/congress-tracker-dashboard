@@ -1,5 +1,4 @@
-"""Shared ticker -> TickerMetadata lookup, used by the REST /trades route and
-the GraphQL ticker DataLoader (trade -> ticker)."""
+"""Ticker -> TickerMetadata lookup used by the REST /trades route."""
 
 from __future__ import annotations
 

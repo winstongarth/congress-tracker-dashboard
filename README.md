@@ -24,12 +24,7 @@ look. This project:
    **overlap** (other members buying the same ticker in the same window),
    and **recency** — blended into a single **composite** score, plus
    **committee-relevance** and **bipartisan-overlap** flags.
-4. Serves the results over REST and GraphQL, with a web dashboard and a
-   mobile app on top.
-
-Three clients ship against the same backend and the same computed scores:
-a Next.js web dashboard, an Expo/React Native mobile app, and the raw
-REST/GraphQL APIs.
+4. Serves the results over a REST API, with a Next.js web dashboard on top.
 
 ## 2. Architecture
 
@@ -65,38 +60,29 @@ REST/GraphQL APIs.
                     ┌─────────────────────────┐
                     │   FastAPI app             │
                     │   REST  (app/api/)        │
-                    │   GraphQL (app/graphql/)  │
-                    │   shared service layer    │
+                    │   service layer           │
                     │   (app/services/)         │
-                    └──────┬─────────────┬──────┘
-                           │             │
-                  REST     │             │  GraphQL
-                           ▼             ▼
-                  ┌────────────┐  ┌──────────────┐
-                  │  Next.js    │  │  Expo / RN    │
-                  │  dashboard  │  │  mobile app   │
-                  │ (frontend/) │  │  (mobile/)    │
-                  └────────────┘  └──────────────┘
+                    └────────────┬─────────────┘
+                                 ▼
+                        ┌────────────────┐
+                        │    Next.js      │
+                        │    dashboard    │
+                        │   (frontend/)   │
+                        └────────────────┘
 ```
 
 Key design points:
 
 - **Ingestion and scoring are batch jobs, not live computation.** Scores
   are computed by `python -m app.cli score` and stored in the `scores` /
-  `portfolio_returns` tables — the API and both clients just read them.
-  Re-run the pipeline after every new scrape to refresh the numbers.
-- **REST is the source of truth for response shapes; GraphQL is additive.**
-  The GraphQL layer (`app/graphql/`) reuses the exact same score/metric
-  lookups as REST (`app/services/`) rather than recomputing anything, and
-  batches its `politician -> trades` and `trade -> ticker` lookups with
-  DataLoader to avoid N+1 queries. Adding GraphQL made zero changes to the
-  existing REST response shapes (enforced by `tests/test_rest_unchanged.py`).
+  `portfolio_returns` tables — the API just reads them. Re-run the
+  pipeline after every new scrape to refresh the numbers.
+- **Route handlers stay thin.** Score/metric lookups live in
+  `app/services/` rather than inline in the FastAPI routers, so the same
+  logic backs `/trades` and `/members/{id}` without duplication.
 - **A shared fetch layer enforces scraping etiquette** (`app/cache/http_cache.py`):
   every fetched page/PDF is cached by a stable key, rate-limited, and sent
   with an identifying User-Agent.
-- **The mobile app is a thin client**, not a port of the dashboard — it
-  covers two screens (trades feed, politician detail) chosen because
-  they make sense as a phone app, consuming the same GraphQL API.
 
 ## 3. Data sources
 
@@ -118,7 +104,6 @@ each scraper.
 **Backend**
 - Python, FastAPI, Uvicorn
 - SQLAlchemy 2.0 + PostgreSQL
-- [Strawberry GraphQL](https://strawberry.rocks/) (FastAPI integration, DataLoader-based batching)
 - Pydantic / pydantic-settings for config
 - httpx, BeautifulSoup4 + lxml, Playwright (Senate scraping), pdfplumber + pytesseract (PDF/OCR parsing of PTR filings)
 - rapidfuzz (ticker/company name fuzzy matching)
@@ -130,18 +115,12 @@ each scraper.
 - Tailwind CSS
 - Recharts (sector breakdown chart)
 
-**Mobile app** (`mobile/`)
-- Expo (managed workflow), React Native, TypeScript, Expo Router
-- Apollo Client, with GraphQL Code Generator producing typed hooks from the live schema
-- react-native-svg (performance chart)
-
 ## 5. Repo structure
 
 ```
 app/
 ├── api/            REST endpoints (FastAPI routers): /trades, /members/{id}, /tickers/{ticker}
-├── graphql/         GraphQL schema, resolvers, and DataLoaders, mounted at /graphql
-├── services/        Shared score/metric lookups used by both REST and GraphQL
+├── services/        Score/metric lookups used by the REST routes
 ├── db/              SQLAlchemy models + session management
 ├── scrapers/        House/Senate/committee/roster scrapers
 ├── normalization/   Asset name -> ticker matching
@@ -156,8 +135,7 @@ config/
 └── committee_sector_map.py   Committee -> sector/industry keyword mapping
 
 frontend/            Next.js dashboard (trade table, member profile pages, ticker pages)
-mobile/              Expo/React Native app (trades feed, politician detail)
-tests/               Pytest suite (REST, GraphQL, DataLoader N+1 regression)
+tests/               Pytest suite (REST API, in-memory SQLite)
 data/                Local cache + SQLite artifacts (gitignored)
 ```
 
@@ -227,57 +205,6 @@ npm run dev
 Then open http://localhost:3000. Run `python -m app.cli score` again after
 any new scrape to refresh the numbers — scores are computed in batch, not
 live in the UI.
-
-### GraphQL API
-
-Alongside the REST endpoints above, the same FastAPI app serves a GraphQL
-aggregation layer at `/graphql`. It reuses the exact same score/metric
-lookups as the REST routes (`app/services/`) and batches its
-`politician -> trades` and `trade -> ticker` lookups with DataLoader to
-avoid N+1 queries. See `app/graphql/` for the schema, resolvers, and
-loaders.
-
-#### Mobile dev: reaching `/graphql` from a physical phone
-
-Expo Go on a physical device can't reach `localhost:8000` — `localhost`
-resolves to the phone itself, not your computer. To test against a real
-device on the same Wi-Fi network:
-
-1. Bind uvicorn to all interfaces, not just localhost:
-
-   ```
-   python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000
-   ```
-
-2. Set `DEBUG=true` in `.env` for this session — it enables GraphiQL at
-   `/graphql` and relaxes CORS to allow any `http://<lan-ip>:<port>` origin
-   (the Expo dev client's Metro bundler runs on a random port). **Never**
-   run with `DEBUG=true` in production.
-3. Find your computer's LAN IP (`ipconfig` on Windows, look for the
-   `192.168.x.x`/`10.x.x.x` address on your Wi-Fi adapter) and point the
-   Expo app at it — e.g. `EXPO_PUBLIC_API_URL=http://192.168.1.50:8000` in
-   `mobile/.env` (see `mobile/README.md`). Your phone and computer must be
-   on the same network, and any firewall prompt for `python.exe`/`uvicorn`
-   needs to be allowed on "Private" networks.
-
-### Mobile app
-
-```
-cd mobile
-npm install
-cp .env.example .env   # see mobile/README.md for the LAN-IP note above
-npm start
-```
-
-Then scan the QR code with Expo Go (see `mobile/README.md` for the full
-walkthrough, including running on a physical device). Two screens:
-
-- **Trades feed** — recent disclosures with pull-to-refresh, infinite
-  scroll, and server-side search/ticker/chamber filtering (never filtered
-  client-side — the GraphQL query variables do the work).
-- **Politician detail** — profile, performance rollup, portfolio P&L,
-  holdings by sector, a per-trade performance chart, and their full trade
-  list, all fetched in one nested GraphQL query.
 
 ## Dashboard columns
 

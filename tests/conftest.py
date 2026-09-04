@@ -16,8 +16,8 @@ from app.db.models import Base, Member, PortfolioReturn, Score, TickerMetadata, 
 @pytest.fixture()
 def engine():
     # A single shared in-memory SQLite connection (StaticPool) so every
-    # Session opened during a test -- REST routes, GraphQL context, and the
-    # test's own setup session -- sees the same data.
+    # Session opened during a test -- REST routes and the test's own setup
+    # session -- sees the same data.
     eng = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(eng)
     yield eng
@@ -141,11 +141,3 @@ def make_portfolio_return(db_session):
         return pr
 
     return _make
-
-
-def gql(client: TestClient, query: str, variables: dict | None = None) -> dict:
-    resp = client.post("/graphql", json={"query": query, "variables": variables or {}})
-    assert resp.status_code == 200, resp.text
-    body = resp.json()
-    assert "errors" not in body, body["errors"]
-    return body["data"]
